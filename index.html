@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* --- CSS REMAINS THE SAME WITH ADDITIONS FOR TIMER --- */
+    /* --- CSS REMAINS THE SAME WITH ADDITIONS FOR NIGHT MODE --- */
     :root{
       --bg1:#05050a;--bg2:#0f001a;--bg3:#1a0028;
       --stroke:rgba(255,255,255,.14);--stroke2:rgba(255,255,255,.22);
@@ -480,11 +480,6 @@
     .receipt-label{color:var(--muted2);font-weight:600;}
     .receipt-value{color:rgba(255,255,255,.95);font-weight:800;}
 
-    .store-closed-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.85);backdrop-filter:blur(16px);}
-    .store-closed-card{width:min(460px,100%);border:1.5px solid rgba(255,255,255,.18);background:linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.05) 100%);
-      backdrop-filter:blur(24px);border-radius:20px;padding:22px 18px;text-align:center;box-shadow:var(--shadow-lg);}
-    .store-closed-title{font-family:Orbitron,monospace;font-size:22px;font-weight:900;background:linear-gradient(135deg, #ff4d4d 0%, var(--orange) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
-
     @media (max-width:480px){
       .container{padding:16px 14px 80px;}
       .logo-img{max-width:200px;}
@@ -565,6 +560,22 @@
       font-weight: 800;
       animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+
+    /* Night Message Style */
+    .night-msg {
+        display: none;
+        margin: 20px 0;
+        padding: 18px 14px;
+        background: rgba(255, 215, 0, 0.08);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: 14px;
+        color: var(--gold-bright);
+        font-weight: 600;
+        text-align: center;
+        line-height: 1.6;
+        font-size: 13.5px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 
@@ -572,16 +583,6 @@
   <audio id="bgmAudio" src="bgm.mp3" loop></audio>
 
   <div class="floating-particles" id="floatingParticles"></div>
-
-  <div class="store-closed-overlay" id="storeClosedOverlay">
-    <div class="store-closed-card">
-      <div class="store-closed-title">🌙 Store Closed</div>
-      <div class="store-closed-text" style="color:#ddd;font-size:14px;font-weight:700;line-height:1.5;">
-        Closing time: 1:00 AM to 9:00 AM<br>
-        We'll start taking orders after 9:00 AM.
-      </div>
-    </div>
-  </div>
 
   <div class="social-proof" id="socialProof">
     <div class="social-proof-avatar" id="socialAvatar">A</div>
@@ -795,6 +796,13 @@
             <div class="delivery-msg" id="deliveryMsg">Verifying Payment & Processing...</div>
         </div>
 
+        <div class="night-msg" id="nightMessage">
+             <i class="fas fa-moon" style="font-size:20px; margin-bottom:8px;"></i><br>
+             Order placed successfully!<br>
+             Instant delivery is currently paused for the night.<br>
+             Your UC will be credited to your account shortly after <strong>9:00 AM</strong>.
+        </div>
+
         <div class="final-success-msg" id="finalSuccessMsg">
              <i class="fa-solid fa-check-double"></i> Your UC has been successfully added to your BGMI account.
         </div>
@@ -954,26 +962,15 @@
 
     function animateLiveOrders(){
       const el = document.getElementById('liveOrders');
-      const currentHour = getIndiaHour();
       
-      if (currentHour >= 1 && currentHour < 9) {
-          el.textContent = "0";
-          return;
-      }
-
       let currentOrders = 1000 + Math.floor(Math.random() * 2001);
       el.textContent = currentOrders;
 
       function updateCounter() {
-          const h = getIndiaHour();
-          if (h >= 1 && h < 9) {
-              el.textContent = "0";
-          } else {
-              currentOrders += 1;
-              el.textContent = currentOrders;
-              el.style.animation = 'none';
-              setTimeout(() => el.style.animation = '', 10);
-          }
+          currentOrders += 1;
+          el.textContent = currentOrders;
+          el.style.animation = 'none';
+          setTimeout(() => el.style.animation = '', 10);
           let nextInterval = 15000 + Math.floor(Math.random() * 5001);
           setTimeout(updateCounter, nextInterval);
       }
@@ -1023,16 +1020,6 @@
       navigator.vibrate(patterns[type] || [10]);
     }
 
-    function applyStoreTiming(){
-      const hour = getIndiaHour();
-      const isClosed = (hour >= 1 && hour < 9);
-      const overlay = document.getElementById('storeClosedOverlay');
-      overlay.style.display = isClosed ? 'flex' : 'none';
-      document.querySelectorAll('button, input').forEach(el => {
-        if(!overlay.contains(el)) isClosed ? el.setAttribute('disabled', true) : el.removeAttribute('disabled');
-      });
-    }
-
     function generateOrderId(){
       return `UCF-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random()*900)}`;
     }
@@ -1053,8 +1040,6 @@
       });
       lines.forEach((lineEl, idx) => { if(lineEl) lineEl.classList.toggle('active', idx < currentStep - 1); });
     }
-
-    applyStoreTiming();
 
     const uidInput = document.getElementById('uid');
     const ignInput = document.getElementById('ign');
@@ -1352,8 +1337,21 @@
           showStep(4);
           triggerHaptic('success');
           
-          // START THE 7 MINUTE TIMER LOGIC
-          startDeliveryTimer();
+          // --- TIME CHECK LOGIC (NEW) ---
+          const currentHour = getIndiaHour(); // Returns 0-23
+          const isNightTime = (currentHour >= 0 && currentHour < 9); // 12 AM to 9 AM
+
+          if (isNightTime) {
+             // SHOW NIGHT MESSAGE, HIDE TIMER
+             document.getElementById('gameLoaderWrap').style.display = 'none';
+             document.getElementById('nightMessage').style.display = 'block';
+             document.getElementById('newOrderBtn').style.display = 'block'; // Allow next order immediately
+          } else {
+             // START THE 7 MINUTE TIMER LOGIC
+             document.getElementById('gameLoaderWrap').style.display = 'block';
+             document.getElementById('nightMessage').style.display = 'none';
+             startDeliveryTimer();
+          }
           
         } else throw new Error();
       } catch(err) {
