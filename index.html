@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* --- CSS REMAINS THE SAME WITH ADDITIONS FOR NIGHT MODE --- */
+    /* --- CSS REMAINS THE SAME --- */
     :root{
       --bg1:#05050a;--bg2:#0f001a;--bg3:#1a0028;
       --stroke:rgba(255,255,255,.14);--stroke2:rgba(255,255,255,.22);
@@ -853,9 +853,9 @@
     const UPIVPA = "ucify@ptaxis";
     const UPI_NAME = "UCify";
 
-    // --- BGM AUDIO SETUP (UPDATED) ---
+    // --- BGM AUDIO SETUP (UPDATED: 50% CAP) ---
     const bgm = document.getElementById('bgmAudio');
-    bgm.volume = 0.7; // Cap at 70%
+    bgm.volume = 0.5; // Cap at 50%
 
     function initAudio() {
         if(bgm.paused) {
@@ -930,11 +930,11 @@
     });
 
     const gamingNames = [
-        "亗『MÂFÎÂ亗", "TOXIC彡KD", "77・playzYT", "SK๛play๛Live", "千ムＩＲＹＹ", "IQōShāDøwW", "LÙÇÍFËR〆", "Mâhïmâ", "DEMØN丨DEEPAK", "亗CZxAnurag亗",
-        "FRSTxZGOD", "FGxWONGPLAYzzz", "GÕD〤RÚSHÈR", "IGメABHAY", "MR々ŁEGENÐ", "VÌNNÍ乂PLAYZ", "KGF๛OP亗×", "ROYALツKUNAL20", "『RÁGNÁR』", "GLXY丨DANGER",
-        "SHADOW๛RIVEN", "會DAKU父", "LEGEND丶OPP", "SAʀDAʀJi", "HAWK么HARSH", "ZMCxSHREY", "K4气KALAAKAR", "『AIMGOD』1", "T乛Rex乛RAVAN", "Ē・ＶＥＮＯＭ",
-        "๛『Vëgêtå", "4A乛M丨SNOW", "٭ɞALPHAʚ٭", "im๛PANDA", "SGLxShivam", "乛GameīxīOM", "・Ｄ卄マＵＶ・", "『EPC』KRXSNA", "ＦｒＯｚｅＮ", "๛Ðʀʌɢo",
-        "ＹＡＳＨīě", "ＳＨＵ及Ｈ", "XT个『Farhan』", "D£ATH๛SLAYER", "『LAKSHYÀ』", "中ツWARRIORYT", "Vns๛Rahul", "EQZxJOKERyt", "ReFLeXツVENOM", "冬ＧＡＢＢＡＲ"
+        "EagleEye", "ShadowReaper", "GhostKiller", "NinjaBlade", "ThunderGod", "IronFury", "CyberWolf", "DeathStrike", "SoulHunter", "BlazeGamer",
+        "ApexPredator", "WildCard", "TitanLord", "VenomSpit", "DarkKnight", "StormBringer", "FrostBite", "RogueOne", "BulletKing", "VikingPower",
+        "AlphaWolf", "OmegaRed", "PhoenixRise", "NightMare", "ZeroCool", "SkyWalker", "SilentAssassin", "HyperSpeed", "DragonHeart", "BlackPanther",
+        "SniperWolf", "CrazyDog", "MachineGun", "FireStorm", "StarLord", "CaptainKiller", "BadBoyGaming", "LegendWarrior", "KingOfUC", "ProSniper",
+        "DeadlyShots", "WarriorSoul", "ImmortalGamer", "GhostRider", "SpeedyGonzales", "TheGodFather", "MatrixReborn", "CyberPunK", "NeonDragon", "SilentKiller"
     ];
 
     const ucPacksList = ["60 UC", "660 UC", "1800 UC", "3850 UC", "8100 UC", "16200 UC"];
@@ -956,8 +956,12 @@
       if(Math.random() > 0.5) showSocialProof();
     }, 10000);
 
+    // ✅ FIXED TIME FUNCTION (Correctly gets IST Hour as Number 0-23)
     function getIndiaHour(){
-      return new Date(new Intl.DateTimeFormat('en-IN', { timeZone:'Asia/Kolkata', hour:'2-digit', hour12:false }).format(new Date())).getHours();
+      const date = new Date();
+      // IST time ka sirf ghanta (hour) nikalega number me (0-23)
+      const hourStr = date.toLocaleString("en-US", {timeZone: "Asia/Kolkata", hour: "numeric", hour12: false});
+      return parseInt(hourStr);
     }
 
     function animateLiveOrders(){
@@ -1337,7 +1341,7 @@
           showStep(4);
           triggerHaptic('success');
           
-          // --- TIME CHECK LOGIC (NEW) ---
+          // --- TIME CHECK LOGIC (FIXED) ---
           const currentHour = getIndiaHour(); // Returns 0-23
           const isNightTime = (currentHour >= 0 && currentHour < 9); // 12 AM to 9 AM
 
